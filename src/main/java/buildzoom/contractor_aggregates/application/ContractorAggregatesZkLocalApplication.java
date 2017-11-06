@@ -27,7 +27,7 @@ import org.apache.samza.util.Util;
 
 
 /**
- * An entry point for {@link WikipediaApplication} that runs in stand alone mode using zookeeper.
+ * An entry point for {@link ContractorAggregatesApplication} that runs in stand alone mode using zookeeper.
  * It waits for the job to finish; The job can also be ended by killing this process.
  */
 public class ContractorAggregatesZkLocalApplication {
@@ -46,7 +46,7 @@ public class ContractorAggregatesZkLocalApplication {
     Config config = cmdLine.loadConfig(options);
 
     LocalApplicationRunner runner = new LocalApplicationRunner(config);
-    WikipediaApplication app = new WikipediaApplication();
+    ContractorAggregatesApplication app = new ContractorAggregatesApplication();
 
     runner.run(app);
     runner.waitForFinish();

@@ -36,7 +36,9 @@ import org.apache.samza.storage.kv.KeyValueStore;
 import org.apache.samza.task.TaskContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import samza.examples.wikipedia.model.WikipediaParser;
+
+import buildzoom.contractor_aggregates.model.ContractorAggregatesParser;
+//import samza.examples.wikipedia.model.WikipediaParser;
 
 import buildzoom.contractor_aggregates.system.ContractorAggregateFeed.ContractorAggregateFeedEvent;
 //import samza.examples.wikipedia.system.WikipediaFeed.WikipediaFeedEvent;
@@ -55,21 +57,12 @@ import java.util.Set;
 
 
 /**
- * This {@link StreamApplication} demonstrates the Samza fluent API by performing the same operations as
- * {@link samza.examples.wikipedia.task.WikipediaFeedStreamTask},
- * {@link samza.examples.wikipedia.task.WikipediaParserStreamTask}, and
- * {@link samza.examples.wikipedia.task.WikipediaStatsStreamTask} in one expression.
  *
- * The only functional difference is the lack of "wikipedia-raw" and "wikipedia-edits"
- * streams to connect the operators, as they are not needed with the fluent API.
- *
- * The application processes Wikipedia events in the following steps:
+ * The application processes ContractorPermitAggregates events in the following steps:
  * <ul>
- *   <li>Merge wikipedia, wiktionary, and wikinews events into one stream</li>
  *   <li>Parse each event to a more structured format</li>
- *   <li>Aggregate some stats over a 10s window</li>
- *   <li>Format each window output for public consumption</li>
- *   <li>Send the window output to Kafka</li>
+ *   <li>Aggregate state-based stats for co-permit-aggregates</li>
+ *   <li>Send the output to Kafka</li>
  * </ul>
  *
  * All of this application logic is defined in the {@link #init(StreamGraph, Config)} method, which
@@ -104,9 +97,6 @@ public class ContractorAggregatesApplication implements StreamApplication {
     // Parse, update stats, prepare output, and send
     permitContractorMatchEvents
         .map(ContractorAggregatesParser::parseEvent)
-        // dunno about this window function, do we need to do this?
-        .window(Windows.tumblingWindow(Duration.ofSeconds(10), WikipediaStats::new,
-                new ContractorAggregatesAggregator(), WikipediaStats.serde()), "")
         .map(this::formatOutput)
         .sendTo(permitContractorOutputStream);
   }
@@ -131,7 +121,7 @@ public class ContractorAggregatesApplication implements StreamApplication {
     @Override
     public void init(Config config, TaskContext context) {
       store = (KeyValueStore<String, Integer>) context.getStore(STATS_STORE_NAME);
-      repeatEdits = context.getMetricsRegistry().newCounter("edit-counters", "repeat-edits");
+      repeatEdits = context.getMetricsRegistry().newCounter("aggregate-counters", "total-aggregates");
     }
 
     @Override
@@ -167,35 +157,28 @@ public class ContractorAggregatesApplication implements StreamApplication {
   /**
    * Format the stats for output to Kafka.
    */
-  private ContractorAggregatesOutput formatOutput(WindowPane<Void, ContractorAggregatesStats> statsWindowPane) {
+  private ContractorAggregatesOutput formatOutput(WindowPane<Void, ContractorAggregates> statsWindowPane) {
     ContractorAggregatesStats stats = statsWindowPane.getMessage();
     return new ContractorAggregatesOutput(
         stats.edits, stats.totalEdits, stats.byteDiff, stats.titles.size(), stats.counts);
   }
 
-  /**
-   * A few statistics about the incoming messages.
-   */
-  public static class ContractorAggregatesStats {
-    // Windowed stats
+  public static class ContractorAggregates {
     int edits = 0;
     int byteDiff = 0;
     Set<String> titles = new HashSet<>();
     Map<String, Integer> counts = new HashMap<>();
-
-    // Total stats
-    int totalEdits = 0;
 
     @Override
     public String toString() {
       return String.format("Stats {edits:%d, byteDiff:%d, titles:%s, counts:%s}", edits, byteDiff, titles, counts);
     }
 
-    static Serde<WikipediaStats> serde() {
-      return new WikipediaStatsSerde();
+    static Serde<ContractorAggregates> serde() {
+      return new ContractorAggregatesSerde();
     }
 
-    public static class ContractorAggregatesStatsSerde implements Serde<ContractorAggregatesStats> {
+    public static class ContractorAggregatesSerde implements Serde<ContractorAggregatesStats> {
       @Override
       public ContractorAggregatesStats fromBytes(byte[] bytes) {
         try {
