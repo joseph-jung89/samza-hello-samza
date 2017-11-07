@@ -31,8 +31,8 @@ public class ContractorAggregatesTask implements StreamTask {
 		String permitId = (String) envelope.getKey();
 		// TODO: understand how this would work, probably JSON?
 		Object contractorPermitMatch = envelope.getMessage();
-		contractorPermitMatch = ContractorAggregatesParser.parseMessage(contractorPermitMatch);
-		HashMap<String, Integer> updatedContractorAggregatesForKVStore = ContractorAggregator.calculateAggregates(store.get(permitId), contractorPermitMatch);
+		HashMap<String, Integer> processedContractorPermitMatch = ContractorAggregatesParser.parseMessage(contractorPermitMatch);
+		HashMap<String, Integer> updatedContractorAggregatesForKVStore = ContractorAggregator.calculateAggregates(store.get(permitId), processedContractorPermitMatch);
 		// state update for the key-value store
 		store.put(permitId, updatedContractorAggregatesForKVStore);
 
