@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package samza.examples.wikipedia.system;
+package buildzoom.contractor_aggregates.system;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,21 +26,21 @@ import org.apache.samza.metrics.MetricsRegistry;
 import org.apache.samza.system.IncomingMessageEnvelope;
 import org.apache.samza.system.SystemStreamPartition;
 import org.apache.samza.util.BlockingEnvelopeMap;
-import samza.examples.wikipedia.system.WikipediaFeed.WikipediaFeedEvent;
-import samza.examples.wikipedia.system.WikipediaFeed.WikipediaFeedListener;
+import buildzoom.contractor_aggregates.system.ContractorAggregatesFeed.ContractorAggregatesFeedEvent;
+import buildzoom.contractor_aggregates.system.ContractorAggregatesFeed.ContractorAggregatesFeedListener;
 
-public class WikipediaConsumer extends BlockingEnvelopeMap implements WikipediaFeedListener {
+public class ContractorAggregatesConsumer extends BlockingEnvelopeMap implements ContractorAggregatesFeedListener {
   private final List<String> channels;
   private final String systemName;
-  private final WikipediaFeed feed;
+  private final ContractorAggregatesFeed feed;
 
-  public WikipediaConsumer(String systemName, WikipediaFeed feed, MetricsRegistry registry) {
+  public ContractorAggregatesConsumer(String systemName, ContractorAggregatesFeed feed, MetricsRegistry registry) {
     this.channels = new ArrayList<String>();
     this.systemName = systemName;
     this.feed = feed;
   }
 
-  public void onEvent(final WikipediaFeedEvent event) {
+  public void onEvent(final ContractorAggregatesFeedEvent event) {
     SystemStreamPartition systemStreamPartition = new SystemStreamPartition(systemName, event.getChannel(), new Partition(0));
 
     try {

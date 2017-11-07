@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package samza.examples.wikipedia.system;
+package buildzoom.contractor_aggregates.system;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -34,12 +34,12 @@ import org.schwering.irc.lib.IRCUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WikipediaFeed {
+public class ContractorAggregatesFeed {
   private static final Logger log = LoggerFactory.getLogger(WikipediaFeed.class);
   private static final Random random = new Random();
   private static final ObjectMapper jsonMapper = new ObjectMapper();
 
-  private final Map<String, Set<WikipediaFeedListener>> channelListeners;
+  private final Map<String, Set<ContractorAggregatesFeedListener>> channelListeners;
   private final String host;
   private final int port;
   private final IRCConnection conn;
