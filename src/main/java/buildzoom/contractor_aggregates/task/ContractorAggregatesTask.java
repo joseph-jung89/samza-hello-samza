@@ -21,12 +21,12 @@ public class ContractorAggregatesTask implements StreamTask {
 
 	private final SystemStream OUTPUT_STREAM = new SystemStream("kafka", "contractor-permit-aggregated");
 
-
 	public void process(IncomingMessageEnvelope envelope, MessageCollector collector, TaskCoordinator coordinator) {
 		// TODO: define key-value store and start implementing stuff
 		int permitId = envelope.getKey();
 		// TODO: understand how this would work
 		Object contractor_permit_aggregate = envelope.getMessage();
+
 
 
 		// after done processing
