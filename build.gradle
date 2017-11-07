@@ -69,10 +69,7 @@ task distTar(dependsOn: build, type: Tar) {
     extension('tar.gz')
     into("config") {
         from("src/main/config") {
-            include "wikipedia-feed.properties"
-            include "wikipedia-parser.properties"
-            include "wikipedia-stats.properties"
-            include "wikipedia-application.properties"
+            include "contractor-aggregates.properties"
 
             // expand the Maven tokens with Gradle equivalents.  Also change 'target' (Maven) to 'build/distributions' (Gradle)
             filter { String line ->
@@ -151,19 +148,9 @@ class SamzaTask extends DefaultTask {
     }
 }
 
-// helper to run the Samza job to retrieve Wikipedia data
-task runWikiFeed(dependsOn: [startGrid, deployHelloSamza], type: SamzaTask) {
-    configFile("wikipedia-feed.properties")
-}
-
-// helper to run the Samza job process Wikipedia data
-task runWikiParser(dependsOn: [startGrid, deployHelloSamza], type: SamzaTask) {
-    configFile("wikipedia-parser.properties")
-}
-
-// helper to run the Samza job to summarize stats on Wikipedia edits
-task runWikiStats(dependsOn: [startGrid, deployHelloSamza], type: SamzaTask) {
-    configFile("wikipedia-stats.properties")
+// helper to run the Samza job to run contractor-aggregates
+task runContractorAggregates(dependsOn: [startGrid, deployHelloSamza], type: SamzaTask) {
+    configFile("contractor-aggregates.properties")
 }
 
 
@@ -194,17 +181,7 @@ class KafkaDumpTask extends DefaultTask {
     }
 }
 
-// helper to dump the wikipedia-raw topic
-task dumpWikiRaw(dependsOn: startGrid, type: KafkaDumpTask) {
-    topic("wikipedia-raw")
-}
-
-// helper to dump the wikipedia-edits topic
-task dumpWikiEdits(dependsOn: startGrid, type: KafkaDumpTask) {
-    topic("wikipedia-edits")
-}
-
-// helper to dump the wikipedia-stats topic
-task dumpWikiStats(dependsOn: startGrid, type: KafkaDumpTask) {
-    topic("wikipedia-stats")
+// helper to dump the co-aggregates topic
+task dumpContractorAggregates(dependsOn: startGrid, type: KafkaDumpTask) {
+    topic("contractor-permit-aggregated")
 }
