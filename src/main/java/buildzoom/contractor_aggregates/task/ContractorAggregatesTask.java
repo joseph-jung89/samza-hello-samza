@@ -1,6 +1,7 @@
 package buildzoom.contractor_aggregates.task;
 
 import java.util.HashMap;
+import javax.json.JsonObject;
 import org.apache.samza.config.Config;
 import org.apache.samza.metrics.Counter;
 import org.apache.samza.storage.kv.KeyValueStore;
@@ -18,12 +19,12 @@ import buildzoom.contractor_aggregates.algorithm.ContractorAggregator;
 // TODO: make this asynchronous, java threads and callbacks are pretty good, and there might be db call
 public class ContractorAggregatesTask implements StreamTask {
 
-	private KeyValueStore<String, HashMap<String, Integer>> store;
+	private KeyValueStore<String, JsonObject> store;
 	private final String KV_STORE_NAME = "aggregates-db";
 	private final SystemStream OUTPUT_STREAM = new SystemStream("kafka", "contractor-permit-aggregated");
 
 	public void init(Config config, TaskContext context) {
-		this.store = (KeyValueStore<String, HashMap<String, Integer>>) context.getStore(KV_STORE_NAME);
+		this.store = (KeyValueStore<String, JsonObject>) context.getStore(KV_STORE_NAME);
 	}
 
 	public void process(IncomingMessageEnvelope envelope, MessageCollector collector, TaskCoordinator coordinator) {
@@ -31,13 +32,13 @@ public class ContractorAggregatesTask implements StreamTask {
 		String permitId = (String) envelope.getKey();
 		// TODO: understand how this would work, probably JSON?
 		Object contractorPermitMatch = envelope.getMessage();
-		HashMap<String, Integer> processedContractorPermitMatch = ContractorAggregatesParser.parseMessage(contractorPermitMatch);
-		HashMap<String, Integer> updatedContractorAggregatesForKVStore = ContractorAggregator.calculateAggregates(store.get(permitId), processedContractorPermitMatch);
+		JsonObject processedContractorPermitMatch = ContractorAggregatesParser.parseMessage(contractorPermitMatch);
+		JsonObject updatedContractorAggregatesForKVStore = ContractorAggregator.calculateAggregates(store.get(permitId), processedContractorPermitMatch);
 		// state update for the key-value store
 		store.put(permitId, updatedContractorAggregatesForKVStore);
 
 		// after done processing, filter out the intermediates
-		HashMap<String, Integer> outputContractorAggregates = ContractorAggregator.filterIntermediates(updatedContractorAggregatesForKVStore);
+		JsonObject outputContractorAggregates = ContractorAggregator.filterIntermediates(updatedContractorAggregatesForKVStore);
 		OutgoingMessageEnvelope outgoingMessage = new OutgoingMessageEnvelope(
 														OUTPUT_STREAM,
 														permitId,
