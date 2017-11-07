@@ -41,7 +41,7 @@ public class ContractorAggregatesTask implements StreamTask {
 		OutgoingMessageEnvelope outgoingMessage = new OutgoingMessageEnvelope(
 														OUTPUT_STREAM,
 														permitId,
-														updatedContractorAggregates // json casting?
+														outputContractorAggregates // json casting?
 													);
 		// fill in outgoing message details
 		collector.send(outgoingMessage);
