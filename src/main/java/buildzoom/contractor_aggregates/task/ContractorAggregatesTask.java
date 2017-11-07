@@ -37,18 +37,13 @@ public class ContractorAggregatesTask implements StreamTask {
 		store.put(permitId, updatedContractorAggregatesForKVStore);
 
 		// after done processing, filter out the intermediates
-		HashMap<String, Integer> outputContractorAggregates = ContractorAggregator.filterIntermediates(updatedContractorAggregatesForKVStore)
+		HashMap<String, Integer> outputContractorAggregates = ContractorAggregator.filterIntermediates(updatedContractorAggregatesForKVStore);
 		OutgoingMessageEnvelope outgoingMessage = new OutgoingMessageEnvelope(
 														OUTPUT_STREAM,
-														keySerializerName,
-														messageSerializerName,
-														partitionKey, // maybe not include?
 														permitId,
-														updatedContractorAggregates
+														updatedContractorAggregates // json casting?
 													);
 		// fill in outgoing message details
-		outgoingMessage.setKey(permitId);
-		outgoingMessage.setMessage(updatedContractorAggregates); // JSON casting?
 		collector.send(outgoingMessage);
 
 		// and also import Redis right?
